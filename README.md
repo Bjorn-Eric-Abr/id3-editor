@@ -37,16 +37,23 @@ To edit an entire directory of MP3s:
 bun run index.ts /path/to/album_folder/
 ```
 
-### Compiling to a Standalone Executable
-You can compile this tool into an incredibly fast, standalone binary that requires no runtime (not even Node or Bun) to execute!
+### Compiling and Installing Globally
+
+You can compile this tool into an incredibly fast, standalone binary that requires no runtime to execute, and automatically link it to your global Bun `.bin` folder (`~/.bun/bin`) so you can run it from anywhere!
 
 ```bash
-bun run build
+# Compile and install globally
+bun run install:cli
 ```
-This generates an `id3-editor` executable. You can move this to your `/usr/local/bin` to run it from anywhere:
+
+*Note: Ensure `~/.bun/bin` is in your shell's `$PATH`.*
+
+Now you can use the CLI from anywhere on your system:
 ```bash
-./id3-editor /path/to/song.mp3
+id3-editor /path/to/song.mp3
 ```
+
+*(To remove the global link later, simply run `bun run uninstall:cli`)*
 
 ## 🧪 Testing
 
