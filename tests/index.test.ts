@@ -7,9 +7,16 @@ const TEST_DIR = path.join(import.meta.dir, 'run');
 const ORIGINAL_MP3 = path.join(import.meta.dir, 'test.mp3');
 const TEST_MP3 = path.join(TEST_DIR, 'test.mp3');
 
-beforeAll(() => {
+beforeAll(async () => {
   if (!fs.existsSync(TEST_DIR)) {
     fs.mkdirSync(TEST_DIR, { recursive: true });
+  }
+  
+  // Download the dummy MP3 file for testing if it doesn't exist (e.g., in CI environments)
+  if (!fs.existsSync(ORIGINAL_MP3)) {
+    const response = await fetch('https://github.com/mathiasbynens/small/raw/master/mp3.mp3');
+    const buffer = await response.arrayBuffer();
+    fs.writeFileSync(ORIGINAL_MP3, Buffer.from(buffer));
   }
 });
 
