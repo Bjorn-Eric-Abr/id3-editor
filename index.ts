@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import enquirer from 'enquirer';
 // @ts-ignore
-import { Form, Confirm, AutoComplete, Input } from 'enquirer';
+const { Form, Confirm, AutoComplete, Input } = enquirer;
 import chalk from 'chalk';
 import NodeID3 from 'node-id3';
 import { generateSuggestedName, generateBatchSuggestedName } from './utils';
@@ -71,6 +72,16 @@ export async function handleSingleFile(filePath: string) {
         { name: 'year', message: 'Year', initial: tags.year || '' },
       ]
     });
+
+    // Override the submit behavior so Enter moves to the next field
+    // unless we are on the very last field.
+    const originalSubmit = prompt.submit.bind(prompt);
+    prompt.submit = async function () {
+      if (this.index < this.choices.length - 1) {
+        return this.down();
+      }
+      return originalSubmit();
+    };
     
     const results = await prompt.run();
 
@@ -171,6 +182,16 @@ export async function handleDirectory(dirPath: string) {
         { name: 'year', message: 'Year', initial: defaultYear },
       ]
     });
+
+    // Override the submit behavior so Enter moves to the next field
+    // unless we are on the very last field.
+    const originalSubmit = prompt.submit.bind(prompt);
+    prompt.submit = async function () {
+      if (this.index < this.choices.length - 1) {
+        return this.down();
+      }
+      return originalSubmit();
+    };
     
     const results = await prompt.run();
 
