@@ -1,0 +1,22 @@
+{
+  "name": "id3",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.ts",
+    "build": "bun build --compile --minify index.ts --outfile id3-editor"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/sanitize-filename": "^1.6.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.1.0",
+    "node-id3": "^0.2.9",
+    "sanitize-filename": "^1.6.4"
+  }
+}
