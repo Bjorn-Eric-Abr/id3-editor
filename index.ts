@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import * as p from '@clack/prompts';
+// @ts-ignore
+import { Form, Confirm, AutoComplete, Input } from 'enquirer';
+import chalk from 'chalk';
 import NodeID3 from 'node-id3';
 import { generateSuggestedName, generateBatchSuggestedName } from './utils';
 
@@ -8,27 +10,27 @@ async function main() {
   const targetPath = process.argv[2];
 
   if (!targetPath) {
-    p.intro('MP3 ID3 Editor');
-    p.log.error('Please provide a file or directory path as an argument.');
-    p.log.message('Usage: bun run index.ts <file_or_directory>');
+    console.log(chalk.bold.blue('MP3 ID3 Editor'));
+    console.log(chalk.red('Please provide a file or directory path as an argument.'));
+    console.log(chalk.gray('Usage: bun run index.ts <file_or_directory>'));
     process.exit(1);
   }
 
   const absolutePath = path.resolve(targetPath);
 
   if (!fs.existsSync(absolutePath)) {
-    p.intro('MP3 ID3 Editor');
-    p.log.error(`Path does not exist: ${absolutePath}`);
+    console.log(chalk.bold.blue('MP3 ID3 Editor'));
+    console.log(chalk.red(`Path does not exist: ${absolutePath}`));
     process.exit(1);
   }
 
   const stat = fs.statSync(absolutePath);
 
-  p.intro('MP3 ID3 Editor');
+  console.log(chalk.bold.blue('\n🎧 MP3 ID3 Editor\n'));
 
   if (stat.isFile()) {
     if (path.extname(absolutePath).toLowerCase() !== '.mp3') {
-      p.log.error('The provided file is not an MP3 file.');
+      console.log(chalk.red('The provided file is not an MP3 file.'));
       process.exit(1);
     }
     await handleSingleFile(absolutePath);
@@ -36,12 +38,12 @@ async function main() {
     await handleDirectory(absolutePath);
   }
 
-  p.outro('Done!');
+  console.log(chalk.green('\n✨ Done!\n'));
 }
 
 export async function handleSingleFile(filePath: string) {
   const filename = path.basename(filePath);
-  p.note(`Editing File: ${filename}`);
+  console.log(chalk.cyan(`Editing File: ${filename}\n`));
 
   const tags = NodeID3.read(filePath);
 
@@ -52,79 +54,87 @@ export async function handleSingleFile(filePath: string) {
   ];
 
   let initialGenre = tags.genre || '';
-  const genreOptions = commonGenres.map(g => ({ value: g, label: g }));
+  const genreOptions = commonGenres.slice();
   if (initialGenre && !commonGenres.includes(initialGenre)) {
-    genreOptions.unshift({ value: initialGenre, label: initialGenre });
+    genreOptions.unshift(initialGenre);
   }
-  genreOptions.push({ value: '__custom__', label: 'Custom...' });
+  genreOptions.push('Custom...');
 
-  const results = await p.group(
-    {
-      title: () => p.text({ message: 'Title:', initialValue: tags.title || '' }),
-      artist: () => p.text({ message: 'Artist:', initialValue: tags.artist || '' }),
-      album: () => p.text({ message: 'Album:', initialValue: tags.album || '' }),
-      year: () => p.text({ message: 'Year:', initialValue: tags.year || '' }),
-      genre: () => p.autocomplete({ 
-        message: 'Genre:', 
-        options: genreOptions, 
-        initialValue: initialGenre ? initialGenre : undefined 
-      }),
-      customGenre: ({ results: r }) => 
-        r.genre === '__custom__' ? p.text({ message: 'Enter custom genre:' }) : undefined
-    },
-    {
-      onCancel: () => {
-        p.cancel('Operation cancelled.');
-        process.exit(0);
-      }
-    }
-  );
-
-  const finalGenre = results.genre === '__custom__' ? results.customGenre : results.genre;
-
-  // Write new tags
-  const newTags: NodeID3.Tags = {
-    title: results.title as string,
-    artist: results.artist as string,
-    album: results.album as string,
-    year: results.year as string,
-    genre: finalGenre as string,
-  };
-
-  const success = NodeID3.update(newTags, filePath);
-  if (success) {
-    p.log.success('Successfully updated ID3 tags.');
-  } else {
-    p.log.error('Failed to update ID3 tags.');
-    return;
-  }
-
-  // Rename
-  let suggestedName = generateSuggestedName(
-    results.artist as string, 
-    results.album as string, 
-    results.year as string, 
-    results.title as string, 
-    filename
-  );
-
-  if (suggestedName !== filename) {
-    const rename = await p.confirm({
-      message: `Rename file to "${suggestedName}"?`,
-      initialValue: true,
+  try {
+    const prompt = new Form({
+      name: 'metadata',
+      message: 'Update ID3 Tags (Use ↑/↓ arrows, Enter to submit):',
+      choices: [
+        { name: 'title', message: 'Title', initial: tags.title || '' },
+        { name: 'artist', message: 'Artist', initial: tags.artist || '' },
+        { name: 'album', message: 'Album', initial: tags.album || '' },
+        { name: 'year', message: 'Year', initial: tags.year || '' },
+      ]
     });
+    
+    const results = await prompt.run();
 
-    if (p.isCancel(rename)) return;
+    let genre = await new AutoComplete({
+      name: 'genre',
+      message: 'Select Genre (start typing to filter):',
+      limit: 10,
+      initial: initialGenre ? genreOptions.indexOf(initialGenre) : 0,
+      choices: genreOptions
+    }).run();
 
-    if (rename) {
-      const newPath = path.join(path.dirname(filePath), suggestedName);
-      try {
-        fs.renameSync(filePath, newPath);
-        p.log.success(`Renamed to: ${suggestedName}`);
-      } catch (err) {
-        p.log.error(`Failed to rename file: ${err}`);
+    if (genre === 'Custom...') {
+      genre = await new Input({
+        message: 'Enter custom genre:',
+      }).run();
+    }
+
+    // Write new tags
+    const newTags: NodeID3.Tags = {
+      title: results.title,
+      artist: results.artist,
+      album: results.album,
+      year: results.year,
+      genre: genre,
+    };
+
+    const success = NodeID3.update(newTags, filePath);
+    if (success) {
+      console.log(chalk.green('\n✔ Successfully updated ID3 tags.'));
+    } else {
+      console.log(chalk.red('\n✖ Failed to update ID3 tags.'));
+      return;
+    }
+
+    // Rename
+    let suggestedName = generateSuggestedName(
+      results.artist, 
+      results.album, 
+      results.year, 
+      results.title, 
+      filename
+    );
+
+    if (suggestedName !== filename) {
+      const rename = await new Confirm({
+        name: 'question',
+        message: `Rename file to "${suggestedName}"?`,
+        initial: true
+      }).run();
+
+      if (rename) {
+        const newPath = path.join(path.dirname(filePath), suggestedName);
+        try {
+          fs.renameSync(filePath, newPath);
+          console.log(chalk.green(`✔ Renamed to: ${suggestedName}`));
+        } catch (err) {
+          console.log(chalk.red(`✖ Failed to rename file: ${err}`));
+        }
       }
     }
+  } catch (err) {
+    // Handling Ctrl+C
+    console.log(chalk.gray('\nOperation cancelled.'));
+    process.exit(0);
   }
 }
 
@@ -133,11 +143,11 @@ export async function handleDirectory(dirPath: string) {
   const mp3Files = files.filter(f => path.extname(f).toLowerCase() === '.mp3').map(f => path.join(dirPath, f));
 
   if (mp3Files.length === 0) {
-    p.log.warn('No MP3 files found in the directory.');
+    console.log(chalk.yellow('⚠ No MP3 files found in the directory.'));
     return;
   }
 
-  p.note(`Batch Mode: Found ${mp3Files.length} MP3 files in ${path.basename(dirPath)}`);
+  console.log(chalk.cyan(`Batch Mode: Found ${mp3Files.length} MP3 files in ${path.basename(dirPath)}\n`));
 
   // Read tags from the first file to prefill
   let defaultArtist = '';
@@ -151,71 +161,71 @@ export async function handleDirectory(dirPath: string) {
     defaultYear = firstTags.year || '';
   }
 
-  const results = await p.group(
-    {
-      artist: () => p.text({ message: 'Artist (for all files):', initialValue: defaultArtist }),
-      album: () => p.text({ message: 'Album (for all files):', initialValue: defaultAlbum }),
-      year: () => p.text({ message: 'Year (for all files):', initialValue: defaultYear }),
-    },
-    {
-      onCancel: () => {
-        p.cancel('Operation cancelled.');
-        process.exit(0);
-      }
-    }
-  );
-
-  const newTags: NodeID3.Tags = {
-    artist: results.artist as string,
-    album: results.album as string,
-    year: results.year as string,
-  };
-
-  const s = p.spinner();
-  s.start('Updating ID3 tags for all files...');
-
-  let successCount = 0;
-  for (const file of mp3Files) {
-    const success = NodeID3.update(newTags, file);
-    if (success) successCount++;
-  }
-
-  s.stop(`Updated tags for ${successCount}/${mp3Files.length} files.`);
-
-  const rename = await p.confirm({
-    message: `Rename all files to include Artist, Album, and Year?`,
-    initialValue: true,
-  });
-
-  if (p.isCancel(rename)) return;
-
-  if (rename) {
-    const rs = p.spinner();
-    rs.start('Renaming files...');
-    let renameCount = 0;
+  try {
+    const prompt = new Form({
+      name: 'metadata',
+      message: 'Update ID3 Tags for ALL files (Use ↑/↓ arrows, Enter to submit):',
+      choices: [
+        { name: 'artist', message: 'Artist', initial: defaultArtist },
+        { name: 'album', message: 'Album', initial: defaultAlbum },
+        { name: 'year', message: 'Year', initial: defaultYear },
+      ]
+    });
     
+    const results = await prompt.run();
+
+    const newTags: NodeID3.Tags = {
+      artist: results.artist,
+      album: results.album,
+      year: results.year,
+    };
+
+    console.log(chalk.gray('\nUpdating ID3 tags for all files...'));
+
+    let successCount = 0;
     for (const file of mp3Files) {
-      const originalName = path.basename(file);
+      const success = NodeID3.update(newTags, file);
+      if (success) successCount++;
+    }
+
+    console.log(chalk.green(`✔ Updated tags for ${successCount}/${mp3Files.length} files.\n`));
+
+    const rename = await new Confirm({
+      name: 'question',
+      message: 'Rename all files to include Artist, Album, and Year?',
+      initial: true
+    }).run();
+
+    if (rename) {
+      console.log(chalk.gray('Renaming files...'));
+      let renameCount = 0;
       
-      let newName = generateBatchSuggestedName(
-        results.artist as string,
-        results.album as string,
-        results.year as string,
-        originalName
-      );
-      
-      if (newName !== originalName) {
-        const newPath = path.join(path.dirname(file), newName);
-        try {
-          fs.renameSync(file, newPath);
-          renameCount++;
-        } catch (err) {
-          // Ignore individual errors for now
+      for (const file of mp3Files) {
+        const originalName = path.basename(file);
+        
+        let newName = generateBatchSuggestedName(
+          results.artist,
+          results.album,
+          results.year,
+          originalName
+        );
+        
+        if (newName !== originalName) {
+          const newPath = path.join(path.dirname(file), newName);
+          try {
+            fs.renameSync(file, newPath);
+            renameCount++;
+          } catch (err) {
+            // Ignore individual errors for now
+          }
         }
       }
+      
+      console.log(chalk.green(`✔ Renamed ${renameCount}/${mp3Files.length} files.`));
     }
-    
-    rs.stop(`Renamed ${renameCount}/${mp3Files.length} files.`);
+  } catch (err) {
+    console.log(chalk.gray('\nOperation cancelled.'));
+    process.exit(0);
   }
 }
 
