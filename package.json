@@ -14,8 +14,7 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/sanitize-filename": "^1.6.3",
-    "markdownlint-cli": "^0.48.0"
+    "@types/sanitize-filename": "^1.6.3"
   },
   "peerDependencies": {
     "typescript": "^5"
