@@ -45,34 +45,6 @@ export async function handleSingleFile(filePath: string) {
 
   const tags = NodeID3.read(filePath);
 
-  const title = await p.text({
-    message: 'Title:',
-    initialValue: tags.title || '',
-  });
-
-  if (p.isCancel(title)) return;
-
-  const artist = await p.text({
-    message: 'Artist:',
-    initialValue: tags.artist || '',
-  });
-
-  if (p.isCancel(artist)) return;
-
-  const album = await p.text({
-    message: 'Album:',
-    initialValue: tags.album || '',
-  });
-
-  if (p.isCancel(album)) return;
-
-  const year = await p.text({
-    message: 'Year:',
-    initialValue: tags.year || '',
-  });
-
-  if (p.isCancel(year)) return;
-
   const commonGenres = [
     'Acoustic', 'Alternative', 'Ambient', 'Blues', 'Classical', 'Country', 
     'Dance', 'Electronic', 'Folk', 'Hip-Hop', 'Indie', 'Jazz', 'Latin', 
@@ -81,35 +53,42 @@ export async function handleSingleFile(filePath: string) {
 
   let initialGenre = tags.genre || '';
   const genreOptions = commonGenres.map(g => ({ value: g, label: g }));
-  
   if (initialGenre && !commonGenres.includes(initialGenre)) {
     genreOptions.unshift({ value: initialGenre, label: initialGenre });
   }
-
   genreOptions.push({ value: '__custom__', label: 'Custom...' });
 
-  let genre = await p.autocomplete({
-    message: 'Genre:',
-    options: genreOptions,
-    initialValue: initialGenre ? initialGenre : undefined,
-  });
+  const results = await p.group(
+    {
+      title: () => p.text({ message: 'Title:', initialValue: tags.title || '' }),
+      artist: () => p.text({ message: 'Artist:', initialValue: tags.artist || '' }),
+      album: () => p.text({ message: 'Album:', initialValue: tags.album || '' }),
+      year: () => p.text({ message: 'Year:', initialValue: tags.year || '' }),
+      genre: () => p.autocomplete({ 
+        message: 'Genre:', 
+        options: genreOptions, 
+        initialValue: initialGenre ? initialGenre : undefined 
+      }),
+      customGenre: ({ results: r }) => 
+        r.genre === '__custom__' ? p.text({ message: 'Enter custom genre:' }) : undefined
+    },
+    {
+      onCancel: () => {
+        p.cancel('Operation cancelled.');
+        process.exit(0);
+      }
+    }
+  );
 
-  if (p.isCancel(genre)) return;
-
-  if (genre === '__custom__') {
-    genre = await p.text({
-      message: 'Enter custom genre:',
-    });
-    if (p.isCancel(genre)) return;
-  }
+  const finalGenre = results.genre === '__custom__' ? results.customGenre : results.genre;
 
   // Write new tags
   const newTags: NodeID3.Tags = {
-    title: title as string,
-    artist: artist as string,
-    album: album as string,
-    year: year as string,
-    genre: genre as string,
+    title: results.title as string,
+    artist: results.artist as string,
+    album: results.album as string,
+    year: results.year as string,
+    genre: finalGenre as string,
   };
 
   const success = NodeID3.update(newTags, filePath);
@@ -122,10 +101,10 @@ export async function handleSingleFile(filePath: string) {
 
   // Rename
   let suggestedName = generateSuggestedName(
-    artist as string, 
-    album as string, 
-    year as string, 
-    title as string, 
+    results.artist as string, 
+    results.album as string, 
+    results.year as string, 
+    results.title as string, 
     filename
   );
 
@@ -172,28 +151,24 @@ export async function handleDirectory(dirPath: string) {
     defaultYear = firstTags.year || '';
   }
 
-  const artist = await p.text({
-    message: 'Artist (for all files):',
-    initialValue: defaultArtist,
-  });
-  if (p.isCancel(artist)) return;
-
-  const album = await p.text({
-    message: 'Album (for all files):',
-    initialValue: defaultAlbum,
-  });
-  if (p.isCancel(album)) return;
-
-  const year = await p.text({
-    message: 'Year (for all files):',
-    initialValue: defaultYear,
-  });
-  if (p.isCancel(year)) return;
+  const results = await p.group(
+    {
+      artist: () => p.text({ message: 'Artist (for all files):', initialValue: defaultArtist }),
+      album: () => p.text({ message: 'Album (for all files):', initialValue: defaultAlbum }),
+      year: () => p.text({ message: 'Year (for all files):', initialValue: defaultYear }),
+    },
+    {
+      onCancel: () => {
+        p.cancel('Operation cancelled.');
+        process.exit(0);
+      }
+    }
+  );
 
   const newTags: NodeID3.Tags = {
-    artist: artist as string,
-    album: album as string,
-    year: year as string,
+    artist: results.artist as string,
+    album: results.album as string,
+    year: results.year as string,
   };
 
   const s = p.spinner();
@@ -223,9 +198,9 @@ export async function handleDirectory(dirPath: string) {
       const originalName = path.basename(file);
       
       let newName = generateBatchSuggestedName(
-        artist as string,
-        album as string,
-        year as string,
+        results.artist as string,
+        results.album as string,
+        results.year as string,
         originalName
       );
       
