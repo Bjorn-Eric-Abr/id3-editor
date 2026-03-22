@@ -9,7 +9,7 @@
     "start": "bun run index.ts",
     "build": "bun build --compile --minify index.ts --outfile id3-edit",
     "install:cli": "bun run build && mkdir -p ~/.bun/bin && ln -sf \"$PWD/id3-edit\" ~/.bun/bin/id3-edit",
-    "uninstall:cli": "rm -f ~/.bun/bin/id3-editor"
+    "uninstall:cli": "rm -f ~/.bun/bin/id3-edit"
   },
   "private": true,
   "devDependencies": {
