@@ -11,8 +11,9 @@ export function logBox(label: string, value: string, labelColor: (text: string) 
     const topBorder = '┌' + '─'.repeat(totalLen) + '┐';
     const bottomBorder = '└' + '─'.repeat(totalLen) + '┘';
 
+    console.log();
     console.log(chalk.gray(topBorder));
-    console.log(`│${labelColor(textLabel)}${valueColor(textValue)}│`);
+    console.log(`${chalk.gray('│')}${labelColor(textLabel)}${valueColor(textValue)}${chalk.gray('│')}`);
     console.log(chalk.gray(bottomBorder) + '\n');
 }
 
