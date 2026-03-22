@@ -1,4 +1,28 @@
 import sanitizeFilename from 'sanitize-filename';
+import enquirer from 'enquirer';
+// @ts-ignore
+const { Form } = enquirer;
+
+export function createFormPrompt(name: string, message: string, choices: { name: string, message: string, initial: string }[]) {
+    const prompt = new Form({
+        name,
+        message,
+        choices
+    });
+
+    const originalSubmit = prompt.submit.bind(prompt);
+    
+    // Override the submit behavior so Enter moves to the next field
+    // unless we are on the very last field.
+    prompt.submit = async function (this: any) {
+        if (this.index < this.choices.length - 1) {
+            return this.down();
+        }
+        return originalSubmit();
+    };
+
+    return prompt;
+}
 
 export function generateSuggestedName(artist: string, album: string, year: string, title: string, originalFilename: string): string {
     const a = artist.trim();

@@ -2,10 +2,10 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import enquirer from 'enquirer';
 // @ts-ignore
-const { Form, Confirm, AutoComplete, Input } = enquirer;
+const { Confirm, AutoComplete, Input } = enquirer;
 import chalk from 'chalk';
 import NodeID3 from 'node-id3';
-import { generateSuggestedName, generateBatchSuggestedName, extractTrackNumber, getUniqueFilename } from './utils';
+import { generateSuggestedName, generateBatchSuggestedName, extractTrackNumber, getUniqueFilename, createFormPrompt } from './utils';
 
 async function main() {
   const targetPath = process.argv[2];
@@ -69,27 +69,17 @@ export async function handleSingleFile(filePath: string) {
   genreChoices.push({ name: 'Custom...', message: 'Custom...' });
 
   try {
-    const prompt = new Form({
-      name: 'metadata',
-      message: 'Update ID3 Tags (Use ↑/↓ arrows, Enter to submit):',
-      choices: [
+    const prompt = createFormPrompt(
+      'metadata',
+      'Update ID3 Tags (Enter to go to next field, submit on last field):',
+      [
         { name: 'artist', message: chalk.blue('Artist'), initial: tags.artist || '' },
         { name: 'title', message: chalk.blue('Title'), initial: tags.title || '' },
         { name: 'album', message: chalk.blue('Album'), initial: tags.album || '' },
         { name: 'year', message: chalk.blue('Year'), initial: tags.year || '' },
       ]
-    });
+    );
 
-    // Override the submit behavior so Enter moves to the next field
-    // unless we are on the very last field.
-    const originalSubmit = prompt.submit.bind(prompt);
-    prompt.submit = async function () {
-      if (this.index < this.choices.length - 1) {
-        return this.down();
-      }
-      return originalSubmit();
-    };
-    
     const results = await prompt.run();
 
     let genre = await new AutoComplete({
@@ -185,26 +175,16 @@ export async function handleDirectory(dirPath: string) {
   }
 
   try {
-    const prompt = new Form({
-      name: 'metadata',
-      message: 'Update ID3 Tags for ALL files (Use ↑/↓ arrows, Enter to submit):',
-      choices: [
+    const prompt = createFormPrompt(
+      'metadata',
+      'Update ID3 Tags for ALL files (Enter to go to next field, submit on last field):',
+      [
         { name: 'artist', message: chalk.blue('Artist'), initial: defaultArtist },
         { name: 'album', message: chalk.blue('Album'), initial: defaultAlbum },
         { name: 'year', message: chalk.blue('Year'), initial: defaultYear },
       ]
-    });
+    );
 
-    // Override the submit behavior so Enter moves to the next field
-    // unless we are on the very last field.
-    const originalSubmit = prompt.submit.bind(prompt);
-    prompt.submit = async function () {
-      if (this.index < this.choices.length - 1) {
-        return this.down();
-      }
-      return originalSubmit();
-    };
-    
     const results = await prompt.run();
 
     const newTags: NodeID3.Tags = {
