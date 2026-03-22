@@ -5,5 +5,5 @@ try:
 
 # Clean test files and build artifacts
 clean:
-    rm ./*.mp3
-    rm .*.bun-build
+    rm ./*.mp3 || true
+    rm -f .*.bun-build || true
