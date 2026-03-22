@@ -5,7 +5,7 @@ tags and rename files.
 
 ## Features
 
-* **Interactive Prompts:** CLI prompts using `@clack/prompts`.
+* **Interactive Prompts:** CLI prompts using `enquirer`.
 * **Prefilling:** Reads existing ID3 tags and uses them as default values for
   the prompts.
 * **Genre Autocomplete:** Searchable list of standard music genres, with

@@ -12,8 +12,8 @@ async function main() {
 
   if (!targetPath) {
     console.log(chalk.bold.blue('MP3 ID3 Editor'));
-    console.log(chalk.red('Please provide a file or directory path as an argument.'));
-    console.log(chalk.gray('Usage: bun run index.ts <file_or_directory>'));
+    console.error(chalk.red('Please provide a file or directory path as an argument.'));
+    console.error(chalk.gray('Usage: bun run index.ts <file_or_directory>'));
     process.exit(1);
   }
 
@@ -21,7 +21,7 @@ async function main() {
 
   if (!fs.existsSync(absolutePath)) {
     console.log(chalk.bold.blue('MP3 ID3 Editor'));
-    console.log(chalk.red(`Path does not exist: ${absolutePath}`));
+    console.error(chalk.red(`Path does not exist: ${absolutePath}`));
     process.exit(1);
   }
 
@@ -31,7 +31,7 @@ async function main() {
 
   if (stat.isFile()) {
     if (path.extname(absolutePath).toLowerCase() !== '.mp3') {
-      console.log(chalk.red('The provided file is not an MP3 file.'));
+      console.error(chalk.red('The provided file is not an MP3 file.'));
       process.exit(1);
     }
     await handleSingleFile(absolutePath);
@@ -120,7 +120,7 @@ export async function handleSingleFile(filePath: string) {
     if (success) {
       console.log(chalk.green('\n✔ Successfully updated ID3 tags.'));
     } else {
-      console.log(chalk.red('\n✖ Failed to update ID3 tags.'));
+      console.error(chalk.red('\n✖ Failed to update ID3 tags.'));
       return;
     }
 
@@ -146,7 +146,7 @@ export async function handleSingleFile(filePath: string) {
           fs.renameSync(filePath, newPath);
           console.log(chalk.green(`✔ Renamed to: ${suggestedName}`));
         } catch (err) {
-          console.log(chalk.red(`✖ Failed to rename file: ${err}`));
+          console.error(chalk.red(`✖ Failed to rename file: ${err}`));
         }
       }
     }
@@ -211,11 +211,10 @@ export async function handleDirectory(dirPath: string) {
 
     console.log(chalk.gray('\nUpdating ID3 tags for all files...'));
 
-    let successCount = 0;
-    for (const file of mp3Files) {
-      const success = NodeID3.update(newTags, file);
-      if (success) successCount++;
-    }
+    const resultsArray = await Promise.all(
+      mp3Files.map(file => NodeID3.Promise.update(newTags, file).catch(() => false))
+    );
+    const successCount = resultsArray.filter(Boolean).length;
 
     console.log(chalk.green(`✔ Updated tags for ${successCount}/${mp3Files.length} files.\n`));
 
@@ -245,7 +244,7 @@ export async function handleDirectory(dirPath: string) {
             fs.renameSync(file, newPath);
             renameCount++;
           } catch (err) {
-            // Ignore individual errors for now
+            console.warn(chalk.yellow(`⚠ Failed to rename ${originalName}: ${err}`));
           }
         }
       }
