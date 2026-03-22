@@ -1,5 +1,5 @@
 import { test, expect, beforeAll, afterAll, beforeEach } from 'bun:test';
-import { promises as fs } from 'node:fs';
+import { $ } from 'bun';
 import path from 'node:path';
 import NodeID3 from 'node-id3';
 
@@ -8,21 +8,18 @@ const ORIGINAL_MP3 = path.join(import.meta.dir, 'test.mp3');
 const TEST_MP3 = path.join(TEST_DIR, 'test.mp3');
 
 beforeAll(async () => {
-  try {
-    await fs.mkdir(TEST_DIR, { recursive: true });
-  } catch (err) {}
+  await $`mkdir -p ${TEST_DIR}`.quiet();
 });
 
 beforeEach(async () => {
   // Reset the test file before every test
+  await $`rm -rf ${TEST_DIR} && mkdir -p ${TEST_DIR}`.quiet();
   await Bun.write(TEST_MP3, Bun.file(ORIGINAL_MP3));
 });
 
 afterAll(async () => {
   // Clean up the run directory
-  try {
-    await fs.rm(TEST_DIR, { recursive: true, force: true });
-  } catch (err) {}
+  await $`rm -rf ${TEST_DIR}`.quiet();
 });
 
 test('NodeID3 can read and write tags to the test mp3', () => {

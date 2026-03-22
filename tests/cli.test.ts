@@ -1,5 +1,5 @@
 import { test, expect, beforeAll, afterAll, beforeEach } from 'bun:test';
-import { promises as fs } from 'node:fs';
+import { $ } from 'bun';
 import path from 'node:path';
 import { runCli } from './cli';
 import NodeID3 from 'node-id3';
@@ -9,27 +9,17 @@ const ORIGINAL_MP3 = path.join(import.meta.dir, 'test.mp3');
 const TEST_MP3 = path.join(TEST_DIR, 'test.mp3');
 
 beforeAll(async () => {
-  try {
-    await fs.mkdir(TEST_DIR, { recursive: true });
-  } catch (err) {}
+  await $`mkdir -p ${TEST_DIR}`;
 });
 
 beforeEach(async () => {
   // Clear all files in run directory
-  try {
-    const files = await fs.readdir(TEST_DIR);
-    for (const file of files) {
-      await fs.unlink(path.join(TEST_DIR, file));
-    }
-  } catch (err) {}
-  
+  await $`rm -rf ${TEST_DIR} && mkdir -p ${TEST_DIR}`.quiet();
   await Bun.write(TEST_MP3, Bun.file(ORIGINAL_MP3));
 });
 
 afterAll(async () => {
-  try {
-    await fs.rm(TEST_DIR, { recursive: true, force: true });
-  } catch (err) {}
+  await $`rm -rf ${TEST_DIR}`;
 });
 
 test('CLI runs interactive prompt smoothly without throwing errors', async () => {
