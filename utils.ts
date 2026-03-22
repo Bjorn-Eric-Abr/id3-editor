@@ -8,6 +8,12 @@ export function generateSuggestedName(artist: string, album: string, year: strin
 
     let nameParts: string[] = [];
 
+    // Prepend track number if it exists in the original filename
+    const trackNumber = extractTrackNumber(originalFilename);
+    if (trackNumber) {
+        nameParts.push(trackNumber.padStart(2, '0'));
+    }
+
     if (a) nameParts.push(a);
 
     if (al && al === t) {
