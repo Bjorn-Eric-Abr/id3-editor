@@ -9,7 +9,7 @@ Default to using Bun instead of Node.js.
 - Use `bun run <script>` instead of `npm run <script>`, `yarn run <script>`
   or `pnpm run <script>`
 - Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+- Bun automatically loads .env, so don't use `dotenv`.
 
 ## APIs & Libraries
 
