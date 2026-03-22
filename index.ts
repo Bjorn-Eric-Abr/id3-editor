@@ -55,11 +55,17 @@ export async function handleSingleFile(filePath: string) {
   ];
 
   let initialGenre = tags.genre || '';
-  const genreOptions = commonGenres.slice();
+  const genreChoices = commonGenres.map(g => ({ name: g, message: g }));
+  let initialGenreIndex = 0;
+
   if (initialGenre && !commonGenres.includes(initialGenre)) {
-    genreOptions.unshift(initialGenre);
+    genreChoices.unshift({ name: initialGenre, message: initialGenre });
+  } else if (initialGenre) {
+    // If initialGenre is one of the common genres, find its index
+    initialGenreIndex = genreChoices.findIndex(choice => choice.name === initialGenre);
   }
-  genreOptions.push('Custom...');
+
+  genreChoices.push({ name: 'Custom...', message: 'Custom...' });
 
   try {
     const prompt = new Form({
@@ -89,9 +95,10 @@ export async function handleSingleFile(filePath: string) {
       name: 'genre',
       message: 'Select Genre (start typing to filter):',
       limit: 10,
-      initial: initialGenre ? genreOptions.indexOf(initialGenre) : 0,
-      choices: genreOptions,
-      suggest: (input: string, choices: string[]) => choices.filter((choice: string) => choice.toLowerCase().includes(input.toLowerCase()))
+      initial: initialGenreIndex, // Use the determined index
+      choices: genreChoices,
+      suggest: (input: string, choices: { name: string; message: string }[]) => 
+        choices.filter(choice => choice.name.toLowerCase().includes(input.toLowerCase()))
     }).run();
 
     if (genre === 'Custom...') {

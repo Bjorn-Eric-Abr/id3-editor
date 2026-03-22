@@ -3,19 +3,19 @@ import sanitizeFilename from 'sanitize-filename';
 import { generateSuggestedName, generateBatchSuggestedName } from '../utils';
 
 test('generates valid single file name from tags', () => {
-    const artist = 'Queen';
-    const album = 'A Night at the Opera';
-    const year = '1975';
-    const title = 'Bohemian Rhapsody';
+    const artist = 'John Coltrane';
+    const album = 'Blue Train';
+    const year = '1958';
+    const title = 'Moment\'s Notice';
     const originalFilename = 'track01.mp3';
 
     const suggested = generateSuggestedName(artist, album, year, title, originalFilename);
-    expect(suggested).toBe('Queen - A Night at the Opera - Bohemian Rhapsody (1975).mp3');
+    expect(suggested).toBe('John Coltrane - Blue Train - Moment\'s Notice (1958).mp3');
 });
 
 test('handles missing tags gracefully in single mode', () => {
-    const suggested = generateSuggestedName('Queen', '', '', 'Bohemian Rhapsody', 'track01.mp3');
-    expect(suggested).toBe('Queen - Bohemian Rhapsody.mp3');
+    const suggested = generateSuggestedName('John Coltrane', '', '', 'Moment\'s Notice', 'track01.mp3');
+    expect(suggested).toBe('John Coltrane - Moment\'s Notice.mp3');
 });
 
 test('falls back to original name if all tags are empty', () => {
@@ -30,24 +30,24 @@ test('sanitizes illegal characters in single mode', () => {
 });
 
 test('uses only album in filename if album and title are identical', () => {
-    const artist = 'Pink Floyd';
-    const album = 'The Dark Side of the Moon';
-    const year = '1973';
-    const title = 'The Dark Side of the Moon';
-    const originalFilename = 'money.mp3';
+    const artist = 'John Coltrane';
+    const album = 'Blue Train';
+    const year = '1958';
+    const title = 'Blue Train';
+    const originalFilename = 'track02.mp3';
 
     const suggested = generateSuggestedName(artist, album, year, title, originalFilename);
-    expect(suggested).toBe('Pink Floyd - The Dark Side of the Moon (1973).mp3');
+    expect(suggested).toBe('John Coltrane - Blue Train (1958).mp3');
 });
 
 test('generates valid batch name from tags', () => {
-    const artist = 'Daft Punk';
-    const album = 'Discovery';
-    const year = '2001';
-    const originalName = '03 Digital Love.mp3';
+    const artist = 'John Coltrane';
+    const album = 'Blue Train';
+    const year = '1958';
+    const originalName = '03 Moment\'s Notice.mp3';
 
     const suggested = generateBatchSuggestedName(artist, album, year, originalName);
-    expect(suggested).toBe('Daft Punk - Discovery (2001) - 03 Digital Love.mp3');
+    expect(suggested).toBe('John Coltrane - Blue Train (1958) - 03 Moment\'s Notice.mp3');
 });
 
 test('sanitizes illegal characters in batch mode', () => {

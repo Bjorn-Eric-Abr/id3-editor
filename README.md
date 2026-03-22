@@ -14,7 +14,7 @@ tags and rename files.
 * **Batch Directory Mode:** Scans a folder of MP3s, prompts for Artist, Album,
   and Year, and applies them to all files.
 * **Auto-Renaming:** Renames files using the provided tags (e.g.,
-  `Queen - A Night at the Opera (1975) - Bohemian Rhapsody.mp3`), sanitizing
+  `John Coltrane - Blue Train - Moment's Notice (1958).mp3`), sanitizing
   illegal filesystem characters.
 
 ## Installation

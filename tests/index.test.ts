@@ -31,11 +31,11 @@ afterAll(() => {
 test('NodeID3 can read and write tags to the test mp3', () => {
   // Arrange
   const newTags: NodeID3.Tags = {
-    title: 'Test Title',
-    artist: 'Test Artist',
-    album: 'Test Album',
-    year: '2024',
-    genre: 'Rock',
+    artist: 'John Coltrane',
+    title: 'Moment\'s Notice',
+    album: 'Blue Train',
+    year: '1958',
+    genre: 'Jazz',
   };
 
   // Act
@@ -45,9 +45,9 @@ test('NodeID3 can read and write tags to the test mp3', () => {
   expect(success).toBe(true);
 
   const readTags = NodeID3.read(TEST_MP3);
-  expect(readTags.title).toBe('Test Title');
-  expect(readTags.artist).toBe('Test Artist');
-  expect(readTags.album).toBe('Test Album');
-  expect(readTags.year).toBe('2024');
-  expect(readTags.genre).toBe('Rock');
+  expect(readTags.artist).toBe('John Coltrane');
+  expect(readTags.title).toBe('Moment\'s Notice');
+  expect(readTags.album).toBe('Blue Train');
+  expect(readTags.year).toBe('1958');
+  expect(readTags.genre).toBe('Jazz');
 });
