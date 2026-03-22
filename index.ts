@@ -66,8 +66,8 @@ export async function handleSingleFile(filePath: string) {
       name: 'metadata',
       message: 'Update ID3 Tags (Use ↑/↓ arrows, Enter to submit):',
       choices: [
-        { name: 'title', message: chalk.blue('Title'), initial: tags.title || '' },
         { name: 'artist', message: chalk.blue('Artist'), initial: tags.artist || '' },
+        { name: 'title', message: chalk.blue('Title'), initial: tags.title || '' },
         { name: 'album', message: chalk.blue('Album'), initial: tags.album || '' },
         { name: 'year', message: chalk.blue('Year'), initial: tags.year || '' },
       ]
