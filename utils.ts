@@ -6,17 +6,26 @@ export function generateSuggestedName(artist: string, album: string, year: strin
     const y = year.trim();
     const t = title.trim();
 
-    let suggestedName = '';
-    if (a) suggestedName += a;
-    if (al) suggestedName += (suggestedName ? ' - ' : '') + al;
-    if (y) suggestedName += ` (${y})`;
-    if (t) suggestedName += (suggestedName ? ' - ' : '') + t;
+    let nameParts: string[] = [];
+
+    if (a) nameParts.push(a);
+
+    if (al && al === t) {
+        nameParts.push(al);
+    } else {
+        if (al) nameParts.push(al);
+        if (t) nameParts.push(t);
+    }
+
+    let baseName = nameParts.join(' - ');
+
+    if (y) baseName += ` (${y})`;
     
-    if (!suggestedName) {
+    if (!baseName) {
         return originalFilename;
     }
 
-    return sanitizeFilename(suggestedName) + '.mp3';
+    return sanitizeFilename(baseName) + '.mp3';
 }
 
 export function generateBatchSuggestedName(artist: string, album: string, year: string, originalFilename: string): string {

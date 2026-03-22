@@ -10,7 +10,7 @@ test('generates valid single file name from tags', () => {
     const originalFilename = 'track01.mp3';
 
     const suggested = generateSuggestedName(artist, album, year, title, originalFilename);
-    expect(suggested).toBe('Queen - A Night at the Opera (1975) - Bohemian Rhapsody.mp3');
+    expect(suggested).toBe('Queen - A Night at the Opera - Bohemian Rhapsody (1975).mp3');
 });
 
 test('handles missing tags gracefully in single mode', () => {
@@ -26,7 +26,18 @@ test('falls back to original name if all tags are empty', () => {
 test('sanitizes illegal characters in single mode', () => {
     const suggested = generateSuggestedName('AC/DC', 'Back: In Black', '1980', 'Hells/Bells', 'track01.mp3');
     // sanitize-filename removes slashes and colons
-    expect(suggested).toBe('ACDC - Back In Black (1980) - HellsBells.mp3');
+    expect(suggested).toBe('ACDC - Back In Black - HellsBells (1980).mp3');
+});
+
+test('uses only album in filename if album and title are identical', () => {
+    const artist = 'Pink Floyd';
+    const album = 'The Dark Side of the Moon';
+    const year = '1973';
+    const title = 'The Dark Side of the Moon';
+    const originalFilename = 'money.mp3';
+
+    const suggested = generateSuggestedName(artist, album, year, title, originalFilename);
+    expect(suggested).toBe('Pink Floyd - The Dark Side of the Moon (1973).mp3');
 });
 
 test('generates valid batch name from tags', () => {
