@@ -1,7 +1,20 @@
 import sanitizeFilename from 'sanitize-filename';
 import enquirer from 'enquirer';
+import chalk from 'chalk';
 // @ts-ignore
 const { Form } = enquirer;
+
+export function logBox(label: string, value: string, labelColor: (text: string) => string = chalk.blue, valueColor: (text: string) => string = chalk.cyan.bold) {
+    const textLabel = ` ${label} `;
+    const textValue = `${value} `;
+    const totalLen = textLabel.length + textValue.length;
+    const topBorder = '┌' + '─'.repeat(totalLen) + '┐';
+    const bottomBorder = '└' + '─'.repeat(totalLen) + '┘';
+
+    console.log(chalk.gray(topBorder));
+    console.log(`│${labelColor(textLabel)}${valueColor(textValue)}│`);
+    console.log(chalk.gray(bottomBorder) + '\n');
+}
 
 export function createFormPrompt(name: string, message: string, choices: { name: string, message: string, initial: string }[]) {
     const prompt = new Form({

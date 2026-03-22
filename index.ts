@@ -5,7 +5,7 @@ import enquirer from 'enquirer';
 const { Confirm, AutoComplete, Input } = enquirer;
 import chalk from 'chalk';
 import NodeID3 from 'node-id3';
-import { generateSuggestedName, generateBatchSuggestedName, extractTrackNumber, getUniqueFilename, createFormPrompt } from './utils';
+import { generateSuggestedName, generateBatchSuggestedName, extractTrackNumber, getUniqueFilename, createFormPrompt, logBox } from './utils';
 
 async function main() {
   const targetPath = process.argv[2];
@@ -45,7 +45,7 @@ async function main() {
 
 export async function handleSingleFile(filePath: string) {
   const filename = path.basename(filePath);
-  console.log(chalk.cyan(`Editing File: ${filename}\n`));
+  logBox('Editing File:', filename);
 
   const tags = NodeID3.read(filePath);
 
@@ -160,7 +160,7 @@ export async function handleDirectory(dirPath: string) {
     return;
   }
 
-  console.log(chalk.cyan(`Batch Mode: Found ${mp3Files.length} MP3 files in ${path.basename(dirPath)}\n`));
+  logBox('Batch Mode:', `Found ${mp3Files.length} MP3 files in ${path.basename(dirPath)}`, chalk.magenta);
 
   // Read tags from the first file to prefill
   let defaultArtist = '';
