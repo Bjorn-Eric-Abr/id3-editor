@@ -212,25 +212,25 @@ export async function handleDirectory(dirPath: string) {
 
     console.log(chalk.gray('\nUpdating ID3 tags for all files...'));
 
-    const resultsArray = await Promise.all(
-      mp3Files.map((file: string) => {
-        const originalName = path.basename(file);
-        const trackNumber = extractTrackNumber(originalName);
-        
-        const fileTags = { ...newTags };
-        if (trackNumber) {
-          fileTags.trackNumber = trackNumber;
-        }
+    let successCount = 0;
+    
+    // Process files sequentially to avoid EMFILE (Too many open files) on large directories
+    for (const file of mp3Files) {
+      const originalName = path.basename(file);
+      const trackNumber = extractTrackNumber(originalName);
+      
+      const fileTags = { ...newTags };
+      if (trackNumber) {
+        fileTags.trackNumber = trackNumber;
+      }
 
-        return NodeID3.Promise.update(fileTags, file)
-          .then(() => true)
-          .catch((err) => {
-            console.error(chalk.red(`\n✖ Failed to update ID3 tags for ${originalName}: ${err}`));
-            return false;
-          });
-      })
-    );
-    const successCount = resultsArray.filter(Boolean).length;
+      try {
+        await NodeID3.Promise.update(fileTags, file);
+        successCount++;
+      } catch (err) {
+        console.error(chalk.red(`\n✖ Failed to update ID3 tags for ${originalName}: ${err}`));
+      }
+    }
 
     console.log(chalk.green(`✔ Updated tags for ${successCount}/${mp3Files.length} files.\n`));
 
