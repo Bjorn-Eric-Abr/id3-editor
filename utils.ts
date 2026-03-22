@@ -46,6 +46,10 @@ export function generateBatchSuggestedName(artist: string, album: string, year: 
 
     let newName = '';
     if (prefix) {
+        // Prevent duplicate prefixes if the tool is run twice
+        if (originalFilename.startsWith(prefix + ' - ')) {
+            return sanitizeFilename(originalFilename);
+        }
         newName = `${prefix} - ${originalFilename}`;
     } else {
         newName = originalFilename;
