@@ -13,7 +13,9 @@ export function logBox(label: string, value: string, labelColor: (text: string) 
 
     console.log();
     console.log(chalk.gray(topBorder));
+    console.log(`${chalk.gray('│')}${' '.repeat(totalLen)}${chalk.gray('│')}`);
     console.log(`${chalk.gray('│')}${labelColor(textLabel)}${valueColor(textValue)}${chalk.gray('│')}`);
+    console.log(`${chalk.gray('│')}${' '.repeat(totalLen)}${chalk.gray('│')}`);
     console.log(chalk.gray(bottomBorder) + '\n');
 }
 
