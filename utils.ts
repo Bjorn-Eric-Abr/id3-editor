@@ -70,4 +70,28 @@ export function extractTrackNumber(filename: string): string | undefined {
     return undefined;
 }
 
+/**
+ * Returns a unique filename by appending an incrementing suffix if the file already exists.
+ * E.g., "song.mp3" -> "song (1).mp3" -> "song (2).mp3"
+ */
+export async function getUniqueFilename(directory: string, filename: string): Promise<string> {
+    const { join, extname, basename } = await import('node:path');
+    
+    let currentPath = join(directory, filename);
+    let currentName = filename;
+    let counter = 1;
+
+    const ext = extname(filename);
+    const nameWithoutExt = basename(filename, ext);
+
+    // Using Bun.file to check for existence per the project guidelines
+    while (await Bun.file(currentPath).exists()) {
+        currentName = `${nameWithoutExt} (${counter})${ext}`;
+        currentPath = join(directory, currentName);
+        counter++;
+    }
+
+    return currentName;
+}
+
 

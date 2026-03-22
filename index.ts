@@ -5,7 +5,7 @@ import enquirer from 'enquirer';
 const { Form, Confirm, AutoComplete, Input } = enquirer;
 import chalk from 'chalk';
 import NodeID3 from 'node-id3';
-import { generateSuggestedName, generateBatchSuggestedName, extractTrackNumber } from './utils';
+import { generateSuggestedName, generateBatchSuggestedName, extractTrackNumber, getUniqueFilename } from './utils';
 
 async function main() {
   const targetPath = process.argv[2];
@@ -135,6 +135,9 @@ export async function handleSingleFile(filePath: string) {
     );
 
     if (suggestedName !== filename) {
+      const dirName = path.dirname(filePath);
+      suggestedName = await getUniqueFilename(dirName, suggestedName);
+
       const rename = await new Confirm({
         name: 'question',
         message: `Rename file to "${suggestedName}"?`,
@@ -142,7 +145,7 @@ export async function handleSingleFile(filePath: string) {
       }).run();
 
       if (rename) {
-        const newPath = path.join(path.dirname(filePath), suggestedName);
+        const newPath = path.join(dirName, suggestedName);
         try {
           await fs.rename(filePath, newPath);
           console.log(chalk.green(`✔ Renamed to: ${suggestedName}`));
@@ -255,7 +258,10 @@ export async function handleDirectory(dirPath: string) {
         );
         
         if (newName !== originalName) {
-          const newPath = path.join(path.dirname(file), newName);
+          const dirName = path.dirname(file);
+          newName = await getUniqueFilename(dirName, newName);
+          
+          const newPath = path.join(dirName, newName);
           try {
             await fs.rename(file, newPath);
             renameCount++;
