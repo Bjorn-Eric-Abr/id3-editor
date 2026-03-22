@@ -1,12 +1,11 @@
 import { test, expect, beforeAll, afterAll, beforeEach } from 'bun:test';
 import { $ } from 'bun';
-import path from 'node:path';
 import { runCli } from './cli';
 import NodeID3 from 'node-id3';
 
-const TEST_DIR = path.join(import.meta.dir, 'run');
-const ORIGINAL_MP3 = path.join(import.meta.dir, 'test.mp3');
-const TEST_MP3 = path.join(TEST_DIR, 'test.mp3');
+const TEST_DIR = `${import.meta.dir}/run`;
+const ORIGINAL_MP3 = `${import.meta.dir}/test.mp3`;
+const TEST_MP3 = `${TEST_DIR}/test.mp3`;
 
 beforeAll(async () => {
   await $`mkdir -p ${TEST_DIR}`;
@@ -68,6 +67,6 @@ test('CLI pre-fills existing tags and works when just pressing ENTER', async () 
 
   // Verify the rename logic successfully used the pre-filled tags
   const newFilename = 'John Coltrane - Blue Train (1958).mp3';
-  const newPath = path.join(TEST_DIR, newFilename);
+  const newPath = `${TEST_DIR}/${newFilename}`;
   expect(await Bun.file(newPath).exists()).toBe(true);
 });
