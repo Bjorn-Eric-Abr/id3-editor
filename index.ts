@@ -66,10 +66,10 @@ export async function handleSingleFile(filePath: string) {
       name: 'metadata',
       message: 'Update ID3 Tags (Use ↑/↓ arrows, Enter to submit):',
       choices: [
-        { name: 'title', message: 'Title', initial: tags.title || '' },
-        { name: 'artist', message: 'Artist', initial: tags.artist || '' },
-        { name: 'album', message: 'Album', initial: tags.album || '' },
-        { name: 'year', message: 'Year', initial: tags.year || '' },
+        { name: 'title', message: chalk.blue('Title'), initial: tags.title || '' },
+        { name: 'artist', message: chalk.blue('Artist'), initial: tags.artist || '' },
+        { name: 'album', message: chalk.blue('Album'), initial: tags.album || '' },
+        { name: 'year', message: chalk.blue('Year'), initial: tags.year || '' },
       ]
     });
 
@@ -90,7 +90,8 @@ export async function handleSingleFile(filePath: string) {
       message: 'Select Genre (start typing to filter):',
       limit: 10,
       initial: initialGenre ? genreOptions.indexOf(initialGenre) : 0,
-      choices: genreOptions
+      choices: genreOptions,
+      suggest: (input: string, choices: string[]) => choices.filter((choice: string) => choice.toLowerCase().includes(input.toLowerCase()))
     }).run();
 
     if (genre === 'Custom...') {
@@ -177,9 +178,9 @@ export async function handleDirectory(dirPath: string) {
       name: 'metadata',
       message: 'Update ID3 Tags for ALL files (Use ↑/↓ arrows, Enter to submit):',
       choices: [
-        { name: 'artist', message: 'Artist', initial: defaultArtist },
-        { name: 'album', message: 'Album', initial: defaultAlbum },
-        { name: 'year', message: 'Year', initial: defaultYear },
+        { name: 'artist', message: chalk.blue('Artist'), initial: defaultArtist },
+        { name: 'album', message: chalk.blue('Album'), initial: defaultAlbum },
+        { name: 'year', message: chalk.blue('Year'), initial: defaultYear },
       ]
     });
 

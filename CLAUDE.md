@@ -11,8 +11,12 @@ Default to using Bun instead of Node.js.
 - Use `bunx <package> <command>` instead of `npx <package> <command>`
 - Bun automatically loads .env, so don't use dotenv.
 
-## APIs
+## APIs & Libraries
 
+- **CLI Prompts:** Use `enquirer` for interactive CLI forms, especially for
+  multi-field input. Avoid `@clack/prompts` for multi-field forms as it only
+  supports sequential prompts.
+- **Colors:** Use `chalk` for terminal output coloring.
 - `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
 - `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
 - `Bun.redis` for Redis. Don't use `ioredis`.

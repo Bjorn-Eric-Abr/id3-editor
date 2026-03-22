@@ -22,8 +22,8 @@ tags and rename files.
 Requires [Bun](https://bun.sh/).
 
 ```bash
-git clone https://github.com/Bjorn-Eric-Abr/id3-editor.git
-cd id3-editor
+git clone https://github.com/Bjorn-Eric-Abr/id3-edit.git
+cd id3-edit
 bun install
 ```
 
@@ -57,7 +57,7 @@ bun run install:cli
 Now you can use the CLI from anywhere on your system:
 
 ```bash
-id3-editor /path/to/song.mp3
+id3-edit /path/to/song.mp3
 ```
 
 *(To remove the global link later, run `bun run uninstall:cli`)*
