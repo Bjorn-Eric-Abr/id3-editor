@@ -1,5 +1,5 @@
 import { test, expect, beforeAll, afterAll, beforeEach } from 'bun:test';
-import fs from 'node:fs';
+import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { runCli } from './cli';
 import NodeID3 from 'node-id3';
@@ -8,26 +8,28 @@ const TEST_DIR = path.join(import.meta.dir, 'run');
 const ORIGINAL_MP3 = path.join(import.meta.dir, 'test.mp3');
 const TEST_MP3 = path.join(TEST_DIR, 'test.mp3');
 
-beforeAll(() => {
-  if (!fs.existsSync(TEST_DIR)) {
-    fs.mkdirSync(TEST_DIR, { recursive: true });
-  }
+beforeAll(async () => {
+  try {
+    await fs.mkdir(TEST_DIR, { recursive: true });
+  } catch (err) {}
 });
 
-beforeEach(() => {
+beforeEach(async () => {
   // Clear all files in run directory
-  const files = fs.readdirSync(TEST_DIR);
-  for (const file of files) {
-    fs.unlinkSync(path.join(TEST_DIR, file));
-  }
+  try {
+    const files = await fs.readdir(TEST_DIR);
+    for (const file of files) {
+      await fs.unlink(path.join(TEST_DIR, file));
+    }
+  } catch (err) {}
   
-  fs.copyFileSync(ORIGINAL_MP3, TEST_MP3);
+  await Bun.write(TEST_MP3, Bun.file(ORIGINAL_MP3));
 });
 
-afterAll(() => {
-  if (fs.existsSync(TEST_DIR)) {
-    fs.rmSync(TEST_DIR, { recursive: true, force: true });
-  }
+afterAll(async () => {
+  try {
+    await fs.rm(TEST_DIR, { recursive: true, force: true });
+  } catch (err) {}
 });
 
 test('CLI runs interactive prompt smoothly without throwing errors', async () => {
@@ -77,5 +79,5 @@ test('CLI pre-fills existing tags and works when just pressing ENTER', async () 
   // Verify the rename logic successfully used the pre-filled tags
   const newFilename = 'John Coltrane - Blue Train (1958).mp3';
   const newPath = path.join(TEST_DIR, newFilename);
-  expect(fs.existsSync(newPath)).toBe(true);
+  expect(await Bun.file(newPath).exists()).toBe(true);
 });

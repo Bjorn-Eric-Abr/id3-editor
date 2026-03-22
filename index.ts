@@ -1,11 +1,11 @@
-import fs from 'node:fs';
+import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import enquirer from 'enquirer';
 // @ts-ignore
 const { Form, Confirm, AutoComplete, Input } = enquirer;
 import chalk from 'chalk';
 import NodeID3 from 'node-id3';
-import { generateSuggestedName, generateBatchSuggestedName } from './utils';
+import { generateSuggestedName, generateBatchSuggestedName, extractTrackNumber } from './utils';
 
 async function main() {
   const targetPath = process.argv[2];
@@ -19,13 +19,14 @@ async function main() {
 
   const absolutePath = path.resolve(targetPath);
 
-  if (!fs.existsSync(absolutePath)) {
+  let stat;
+  try {
+    stat = await fs.stat(absolutePath);
+  } catch {
     console.log(chalk.bold.blue('MP3 ID3 Editor'));
     console.error(chalk.red(`Path does not exist: ${absolutePath}`));
     process.exit(1);
   }
-
-  const stat = fs.statSync(absolutePath);
 
   console.log(chalk.bold.blue('\n🎧 MP3 ID3 Editor\n'));
 
@@ -143,7 +144,7 @@ export async function handleSingleFile(filePath: string) {
       if (rename) {
         const newPath = path.join(path.dirname(filePath), suggestedName);
         try {
-          fs.renameSync(filePath, newPath);
+          await fs.rename(filePath, newPath);
           console.log(chalk.green(`✔ Renamed to: ${suggestedName}`));
         } catch (err) {
           console.error(chalk.red(`✖ Failed to rename file: ${err}`));
@@ -158,8 +159,8 @@ export async function handleSingleFile(filePath: string) {
 }
 
 export async function handleDirectory(dirPath: string) {
-  const files = fs.readdirSync(dirPath);
-  const mp3Files = files.filter(f => path.extname(f).toLowerCase() === '.mp3').map(f => path.join(dirPath, f));
+  const files = await fs.readdir(dirPath);
+  const mp3Files = files.filter((f: string) => path.extname(f).toLowerCase() === '.mp3').map((f: string) => path.join(dirPath, f));
 
   if (mp3Files.length === 0) {
     console.log(chalk.yellow('⚠ No MP3 files found in the directory.'));
@@ -212,7 +213,22 @@ export async function handleDirectory(dirPath: string) {
     console.log(chalk.gray('\nUpdating ID3 tags for all files...'));
 
     const resultsArray = await Promise.all(
-      mp3Files.map(file => NodeID3.Promise.update(newTags, file).catch(() => false))
+      mp3Files.map((file: string) => {
+        const originalName = path.basename(file);
+        const trackNumber = extractTrackNumber(originalName);
+        
+        const fileTags = { ...newTags };
+        if (trackNumber) {
+          fileTags.trackNumber = trackNumber;
+        }
+
+        return NodeID3.Promise.update(fileTags, file)
+          .then(() => true)
+          .catch((err) => {
+            console.error(chalk.red(`\n✖ Failed to update ID3 tags for ${originalName}: ${err}`));
+            return false;
+          });
+      })
     );
     const successCount = resultsArray.filter(Boolean).length;
 
@@ -241,7 +257,7 @@ export async function handleDirectory(dirPath: string) {
         if (newName !== originalName) {
           const newPath = path.join(path.dirname(file), newName);
           try {
-            fs.renameSync(file, newPath);
+            await fs.rename(file, newPath);
             renameCount++;
           } catch (err) {
             console.warn(chalk.yellow(`⚠ Failed to rename ${originalName}: ${err}`));

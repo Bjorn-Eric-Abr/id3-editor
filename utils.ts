@@ -47,3 +47,17 @@ export function generateBatchSuggestedName(artist: string, album: string, year: 
 
     return sanitizeFilename(newName);
 }
+
+/**
+ * Extracts a track number from the beginning of a filename.
+ * E.g., "01 - Intro.mp3" -> "1", "12 track.mp3" -> "12"
+ */
+export function extractTrackNumber(filename: string): string | undefined {
+    const match = filename.match(/^0*(\d+)/);
+    if (match) {
+        return match[1];
+    }
+    return undefined;
+}
+
+

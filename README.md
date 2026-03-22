@@ -12,7 +12,9 @@ tags and rename files.
   support for custom entries.
 * **Single File Mode:** Prompts for Title, Artist, Album, Year, and Genre.
 * **Batch Directory Mode:** Scans a folder of MP3s, prompts for Artist, Album,
-  and Year, and applies them to all files.
+  and Year, and applies them to all files. If a filename starts with a number
+  (e.g., `01 - track.mp3`), it is automatically extracted and saved as the
+  track number in the ID3 tag.
 * **Auto-Renaming:** Renames files using the provided tags (e.g.,
   `John Coltrane - Blue Train - Moment's Notice (1958).mp3`), sanitizing
   illegal filesystem characters.

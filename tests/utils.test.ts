@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test';
 import sanitizeFilename from 'sanitize-filename';
-import { generateSuggestedName, generateBatchSuggestedName } from '../utils';
+import { generateSuggestedName, generateBatchSuggestedName, extractTrackNumber } from '../utils';
 
 test('generates valid single file name from tags', () => {
     const artist = 'John Coltrane';
@@ -53,4 +53,17 @@ test('generates valid batch name from tags', () => {
 test('sanitizes illegal characters in batch mode', () => {
     const suggested = generateBatchSuggestedName('AC/DC', 'Back: In Black', '1980', 'Hells/Bells.mp3');
     expect(suggested).toBe('ACDC - Back In Black (1980) - HellsBells.mp3');
+});
+
+test('extracts track number from filename starting with a number', () => {
+    expect(extractTrackNumber('01 - Track.mp3')).toBe('1');
+    expect(extractTrackNumber('12 Track.mp3')).toBe('12');
+    expect(extractTrackNumber('005.mp3')).toBe('5');
+    expect(extractTrackNumber('3_song.mp3')).toBe('3');
+});
+
+test('returns undefined for filename not starting with a number', () => {
+    expect(extractTrackNumber('Track 01.mp3')).toBeUndefined();
+    expect(extractTrackNumber('song.mp3')).toBeUndefined();
+    expect(extractTrackNumber(' - 01 Track.mp3')).toBeUndefined();
 });
