@@ -1,11 +1,10 @@
 import { test, expect, beforeAll, afterAll, beforeEach } from 'bun:test';
 import { $ } from 'bun';
-import path from 'node:path';
 import NodeID3 from 'node-id3';
 
-const TEST_DIR = path.join(import.meta.dir, 'run');
-const ORIGINAL_MP3 = path.join(import.meta.dir, 'test.mp3');
-const TEST_MP3 = path.join(TEST_DIR, 'test.mp3');
+const TEST_DIR = `${import.meta.dir}/run`;
+const ORIGINAL_MP3 = `${import.meta.dir}/test.mp3`;
+const TEST_MP3 = `${TEST_DIR}/test.mp3`;
 
 beforeAll(async () => {
   await $`mkdir -p ${TEST_DIR}`.quiet();
