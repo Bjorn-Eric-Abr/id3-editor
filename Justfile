@@ -7,3 +7,7 @@ try:
 clean:
     rm ./*.mp3 || true
     rm -f .*.bun-build || true
+
+reinstall:
+    rm ~/.bun/bin/id3-edit || true
+    bun run install:cli
