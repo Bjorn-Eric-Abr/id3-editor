@@ -28,8 +28,6 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(chalk.bold.blue('\n🎧 MP3 ID3 Editor\n'));
-
   if (stat.isFile()) {
     if (path.extname(absolutePath).toLowerCase() !== '.mp3') {
       console.error(chalk.red('The provided file is not an MP3 file.'));
@@ -45,7 +43,7 @@ async function main() {
 
 export async function handleSingleFile(filePath: string) {
   const filename = path.basename(filePath);
-  logBox('Editing File:', filename);
+  logBox('Editing:', filename);
 
   const tags = NodeID3.read(filePath);
 
